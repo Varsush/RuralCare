@@ -73,7 +73,7 @@ export default function FollowUpPage() {
       setError("");
 
       const response = await fetch(
-        "http://127.0.0.1:8000/api/ai/follow-up",
+        "`${process.env.NEXT_PUBLIC_API_URL}/api/ai/follow-up",
         {
           method: "POST",
           headers: {
