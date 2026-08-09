@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+:root{
+  --bg:#0F1720;
+  --sidebar:#131D2B;
+  --card:#182433;
+  --primary:#3FAF8D;
+  --primary-light:#6DD6B8;
+  --text:#F8FAFC;
+  --muted:#94A3B8;
+}
+
+
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+
+  background:
+  radial-gradient(circle at top right,
+  rgba(63,175,141,0.08),
+  transparent 40%),
+
+  radial-gradient(circle at bottom left,
+  rgba(109,214,184,0.05),
+  transparent 35%),
+
+  var(--bg);
+
+  color:var(--text);
+
+  font-family:Inter,Segoe UI,sans-serif;
+
+}
+
+button{
+
+  cursor:pointer;
+
+  transition:.25s;
+
+}
