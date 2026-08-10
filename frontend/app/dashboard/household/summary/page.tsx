@@ -1,7 +1,15 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import {
+  Suspense,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  useSearchParams,
+  useRouter,
+} from "next/navigation";
 import {
   ArrowLeft,
   Check,
@@ -42,25 +50,37 @@ type Household = {
   location?: string;
 };
 
-export default function SummaryPage() {
+function SummaryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const householdId = searchParams.get("id");
 
-  const [visit, setVisit] = useState<VisitData | null>(null);
-  const [household, setHousehold] = useState<Household | null>(null);
+  const [visit, setVisit] =
+    useState<VisitData | null>(null);
 
-  const [summary, setSummary] = useState("");
-  const [reportedSymptoms, setReportedSymptoms] = useState<string[]>([]);
-  const [importantObservations, setImportantObservations] = useState<string[]>(
-  []
-  );
+  const [household, setHousehold] =
+    useState<Household | null>(null);
 
-  const [editing, setEditing] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [summary, setSummary] =
+    useState("");
 
-  const [loadingSummary, setLoadingSummary] = useState(false);
-  const [summaryError, setSummaryError] = useState("");
+  const [reportedSymptoms, setReportedSymptoms] =
+    useState<string[]>([]);
+
+  const [importantObservations, setImportantObservations] =
+    useState<string[]>([]);
+
+  const [editing, setEditing] =
+    useState(false);
+
+  const [submitted, setSubmitted] =
+    useState(false);
+
+  const [loadingSummary, setLoadingSummary] =
+    useState(false);
+
+  const [summaryError, setSummaryError] =
+    useState("");
 
   useEffect(() => {
     if (!householdId) return;
@@ -78,22 +98,24 @@ export default function SummaryPage() {
       }
 
       try {
-        const parsedVisit: VisitData = JSON.parse(savedVisit);
+        const parsedVisit: VisitData =
+          JSON.parse(savedVisit);
 
         setVisit(parsedVisit);
 
-        
-
-        const savedHouseholds = localStorage.getItem(
-          "sahayak_households"
-        );
+        const savedHouseholds =
+          localStorage.getItem(
+            "sahayak_households"
+          );
 
         if (savedHouseholds) {
           const households: Household[] =
             JSON.parse(savedHouseholds);
 
           const found = households.find(
-            (item) => String(item.id) === householdId
+            (item) =>
+              String(item.id) ===
+              householdId
           );
 
           if (found) {
@@ -101,76 +123,92 @@ export default function SummaryPage() {
           }
         }
 
-       
-
         setLoadingSummary(true);
         setSummaryError("");
 
-        const answers = parsedVisit.followUpAnswers || {};
-        const questions = parsedVisit.followUpQuestions || [];
+        const answers =
+          parsedVisit.followUpAnswers || {};
 
-        /*
-         * Detect Kannada from the patient's complaint.
-         *
-         * Kannada Unicode range:
-         * U+0C80 - U+0CFF
-         */
-        const language = /[\u0C80-\u0CFF]/.test(
-          parsedVisit.complaint
-        )
-          ? "Kannada"
-          : "English";
+        const questions =
+          parsedVisit.followUpQuestions || [];
+
+        const language =
+          /[\u0C80-\u0CFF]/.test(
+            parsedVisit.complaint
+          )
+            ? "Kannada"
+            : "English";
+
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL;
+
+        if (!apiUrl) {
+          throw new Error(
+            "NEXT_PUBLIC_API_URL is not configured."
+          );
+        }
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/ai/summary`,
+          `${apiUrl}/api/ai/summary`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              complaint: parsedVisit.complaint,
+              complaint:
+                parsedVisit.complaint,
 
-              relationship: parsedVisit.relationship,
+              relationship:
+                parsedVisit.relationship,
 
-              questions: questions,
+              questions,
 
-              answers: Object.fromEntries(
-                Object.entries(answers).map(
-                  ([key, value]) => [
-                    String(key),
-                    value,
-                  ]
-                )
-              ),
+              answers:
+                Object.fromEntries(
+                  Object.entries(
+                    answers
+                  ).map(
+                    ([key, value]) => [
+                      String(key),
+                      value,
+                    ]
+                  )
+                ),
 
-              language: language,
+              language,
             }),
           }
         );
 
         if (!response.ok) {
-          const errorText = await response.text();
+          const errorText =
+            await response.text();
 
           throw new Error(
             `Summary API failed: ${response.status} ${errorText}`
           );
         }
 
-        const data = await response.json();
+        const data =
+          await response.json();
 
-        
-
-        setSummary(data.summary || "");
+        setSummary(
+          data.summary || ""
+        );
 
         setReportedSymptoms(
-          Array.isArray(data.reported_symptoms)
+          Array.isArray(
+            data.reported_symptoms
+          )
             ? data.reported_symptoms
             : []
         );
 
         setImportantObservations(
-          Array.isArray(data.important_observations)
+          Array.isArray(
+            data.important_observations
+          )
             ? data.important_observations
             : []
         );
@@ -191,16 +229,17 @@ export default function SummaryPage() {
     loadVisitAndSummary();
   }, [householdId, router]);
 
-  
-
   const saveVisit = () => {
-    if (!visit || !householdId || !summary.trim()) {
+    if (
+      !visit ||
+      !householdId ||
+      !summary.trim()
+    ) {
       return;
     }
 
-    const submittedAt = new Date().toISOString();
-
-    
+    const submittedAt =
+      new Date().toISOString();
 
     const finalVisit = {
       ...visit,
@@ -209,7 +248,9 @@ export default function SummaryPage() {
       importantObservations,
       summaryEdited: editing,
       submittedAt,
+      completedAt: submittedAt,
       status: "Completed",
+      hasComplaint: true,
     };
 
     localStorage.setItem(
@@ -217,40 +258,56 @@ export default function SummaryPage() {
       JSON.stringify(finalVisit)
     );
 
-   
-
-    const savedHouseholds = localStorage.getItem(
-      "sahayak_households"
-    );
+    const savedHouseholds =
+      localStorage.getItem(
+        "sahayak_households"
+      );
 
     if (savedHouseholds) {
       try {
-        const households = JSON.parse(savedHouseholds);
+        const households =
+          JSON.parse(
+            savedHouseholds
+          );
 
         if (Array.isArray(households)) {
-          const updatedHouseholds = households.map((item) => {
-            if (String(item.id) === String(householdId)) {
-              return {
-                ...item,
-                status: "Visited",
-                lastVisitAt: submittedAt,
-              };
-            }
+          const updatedHouseholds =
+            households.map(
+              (item) => {
+                if (
+                  String(item.id) ===
+                  String(householdId)
+                ) {
+                  return {
+                    ...item,
+                    status: "Visited",
+                    lastVisitAt:
+                      submittedAt,
+                  };
+                }
 
-            return item;
-          });
+                return item;
+              }
+            );
 
           localStorage.setItem(
             "sahayak_households",
-            JSON.stringify(updatedHouseholds)
+            JSON.stringify(
+              updatedHouseholds
+            )
           );
 
-          const updatedHousehold = updatedHouseholds.find(
-            (item) => String(item.id) === String(householdId)
-          );
+          const updatedHousehold =
+            updatedHouseholds.find(
+              (item) =>
+                String(item.id) ===
+                String(householdId)
+            );
 
           if (updatedHousehold) {
-            setHousehold(updatedHousehold);
+            setHousehold(
+              updatedHousehold
+            );
           }
         }
       } catch (error) {
@@ -261,16 +318,17 @@ export default function SummaryPage() {
       }
     }
 
-    
-
-    const existingCases = localStorage.getItem(
-      "sahayak_doctor_cases"
-    );
+    const existingCases =
+      localStorage.getItem(
+        "sahayak_doctor_cases"
+      );
 
     let cases: any[] = [];
 
     try {
-      cases = existingCases ? JSON.parse(existingCases) : [];
+      cases = existingCases
+        ? JSON.parse(existingCases)
+        : [];
 
       if (!Array.isArray(cases)) {
         cases = [];
@@ -281,43 +339,67 @@ export default function SummaryPage() {
 
     const doctorCase = {
       id: `${householdId}-${Date.now()}`,
-      householdId: Number(householdId),
+      householdId: Number(
+        householdId
+      ),
+
       house:
         household?.houseNumber ||
         household?.house ||
         "Household",
+
       headName:
         household?.headName ||
         household?.head ||
         "Household Head",
-      mobile: household?.mobile || "",
+
+      mobile:
+        household?.mobile || "",
+
       address:
         household?.address ||
         household?.location ||
         "",
-      relationship: visit.relationship,
-      complaint: visit.complaint,
-      photo: visit.photo || null,
-      followUpQuestions: visit.followUpQuestions || [],
-      followUpAnswers: visit.followUpAnswers || {},
-      clinicalSummary: summary,
+
+      relationship:
+        visit.relationship,
+
+      complaint:
+        visit.complaint,
+
+      photo:
+        visit.photo || null,
+
+      followUpQuestions:
+        visit.followUpQuestions ||
+        [],
+
+      followUpAnswers:
+        visit.followUpAnswers ||
+        {},
+
+      clinicalSummary:
+        summary,
+
       reportedSymptoms,
+
       importantObservations,
+
       submittedAt,
+
       status: "New",
     };
 
     localStorage.setItem(
       "sahayak_doctor_cases",
-      JSON.stringify([...cases, doctorCase])
+      JSON.stringify([
+        ...cases,
+        doctorCase,
+      ])
     );
-
-    
 
     setSubmitted(true);
   };
-
-  
 
   if (!visit) {
     return (
@@ -338,8 +420,6 @@ export default function SummaryPage() {
     household?.headName ||
     household?.head ||
     "Household Head";
-
- 
 
   if (submitted) {
     return (
@@ -366,8 +446,7 @@ export default function SummaryPage() {
             </h1>
 
             <p className="mx-auto mt-4 max-w-lg leading-7 text-slate-400">
-              The clinical summary has been saved and the case is ready
-              for the doctor to review.
+              The clinical summary has been saved and the case is ready for the doctor to review.
             </p>
 
             <div className="mt-8 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 text-left">
@@ -389,18 +468,20 @@ export default function SummaryPage() {
             </div>
 
             <button
-               type="button"
-               onClick={() => {
-                 console.log("Returning to dashboard...");
-                 router.push("/dashboard");
-                }}
-                className="mt-8 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 font-semibold transition hover:bg-emerald-400"
+              type="button"
+              onClick={() =>
+                router.push(
+                  "/dashboard"
+                )
+              }
+              className="mt-8 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 font-semibold transition hover:bg-emerald-400"
             >
-                Return to Dashboard
-                <ArrowLeft
-                  size={18}
-                  className="rotate-180"
-                />
+              Return to Dashboard
+
+              <ArrowLeft
+                size={18}
+                className="rotate-180"
+              />
             </button>
           </div>
         </section>
@@ -408,18 +489,14 @@ export default function SummaryPage() {
     );
   }
 
-
-
   return (
     <main className="min-h-screen bg-[#061321] text-white">
-      {/* Background */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-40 top-0 h-[650px] w-[650px] rounded-full bg-emerald-500/[0.06] blur-[180px]" />
 
         <div className="absolute bottom-[-180px] right-[8%] h-[500px] w-[500px] rounded-full bg-cyan-500/[0.05] blur-[180px]" />
       </div>
 
-      {/* Header */}
       <header className="relative z-10 border-b border-white/[0.07] bg-[#071827]/70 backdrop-blur-xl">
         <div className="mx-auto flex h-[88px] max-w-[1188px] items-center justify-between px-8">
           <div className="flex items-center gap-4">
@@ -453,9 +530,7 @@ export default function SummaryPage() {
         </div>
       </header>
 
-      {/* Main */}
       <section className="relative z-10 mx-auto w-full max-w-[1000px] px-8 pb-16 pt-12">
-        {/* Heading */}
         <div className="mb-9">
           <p className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-wide text-emerald-400">
             <Sparkles size={17} />
@@ -467,33 +542,38 @@ export default function SummaryPage() {
           </h2>
 
           <p className="mt-3 text-[17px] leading-7 text-slate-400">
-            Review the generated summary carefully. You can edit it
-            before submitting the visit to the doctor.
+            Review the generated summary carefully. You can edit it before submitting the visit to the doctor.
           </p>
         </div>
 
-        {/* Patient / household overview */}
         <div className="grid gap-5 sm:grid-cols-3">
           <InfoCard
-            icon={<HeartPulse size={19} />}
+            icon={
+              <HeartPulse size={19} />
+            }
             label="Household"
             value={houseName}
           />
 
           <InfoCard
-            icon={<UserRound size={19} />}
+            icon={
+              <UserRound size={19} />
+            }
             label="Head"
             value={headName}
           />
 
           <InfoCard
-            icon={<UserRound size={19} />}
+            icon={
+              <UserRound size={19} />
+            }
             label="Relationship"
-            value={visit.relationship}
+            value={
+              visit.relationship
+            }
           />
         </div>
 
-        {/* Complaint */}
         <div className="mt-7 rounded-3xl border border-white/[0.08] bg-white/[0.035] p-8 backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-500/10">
@@ -528,7 +608,6 @@ export default function SummaryPage() {
           )}
         </div>
 
-        {/* AI summary */}
         <div className="mt-7 rounded-3xl border border-emerald-500/15 bg-emerald-500/[0.025] p-8 backdrop-blur-xl">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -553,9 +632,15 @@ export default function SummaryPage() {
             <button
               type="button"
               onClick={() =>
-                setEditing((previous) => !previous)
+                setEditing(
+                  (previous) =>
+                    !previous
+                )
               }
-              disabled={loadingSummary || !summary}
+              disabled={
+                loadingSummary ||
+                !summary
+              }
               className="flex h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.025] px-4 text-sm font-semibold transition hover:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Edit3 size={17} />
@@ -566,7 +651,6 @@ export default function SummaryPage() {
             </button>
           </div>
 
-          {/* Loading */}
           {loadingSummary && (
             <div className="mt-7 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.05] p-5">
               <div className="flex items-center gap-3">
@@ -581,15 +665,13 @@ export default function SummaryPage() {
                   </p>
 
                   <p className="mt-1 text-sm text-slate-400">
-                    Please wait while the patient's complaint and
-                    follow-up responses are reviewed.
+                    Please wait while the patient's complaint and follow-up responses are reviewed.
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Error */}
           {summaryError && (
             <div className="mt-7 rounded-2xl border border-red-500/20 bg-red-500/[0.05] p-5">
               <p className="font-semibold text-red-300">
@@ -602,11 +684,12 @@ export default function SummaryPage() {
             </div>
           )}
 
-          {/* Summary textarea */}
           <textarea
             value={summary}
             onChange={(event) =>
-              setSummary(event.target.value)
+              setSummary(
+                event.target.value
+              )
             }
             readOnly={!editing}
             placeholder={
@@ -622,8 +705,8 @@ export default function SummaryPage() {
             }`}
           />
 
-          {/* Reported symptoms */}
-          {reportedSymptoms.length > 0 && (
+          {reportedSymptoms.length >
+            0 && (
             <div className="mt-6">
               <h4 className="text-sm font-semibold text-slate-300">
                 Reported Symptoms
@@ -644,8 +727,8 @@ export default function SummaryPage() {
             </div>
           )}
 
-          {/* Important observations */}
-          {importantObservations.length > 0 && (
+          {importantObservations.length >
+            0 && (
             <div className="mt-6">
               <h4 className="text-sm font-semibold text-slate-300">
                 Important Observations
@@ -653,7 +736,10 @@ export default function SummaryPage() {
 
               <ul className="mt-3 space-y-2">
                 {importantObservations.map(
-                  (observation, index) => (
+                  (
+                    observation,
+                    index
+                  ) => (
                     <li
                       key={index}
                       className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 text-sm text-slate-300"
@@ -674,7 +760,6 @@ export default function SummaryPage() {
           )}
         </div>
 
-        {/* Submit */}
         <div className="mt-7 rounded-3xl border border-white/[0.08] bg-white/[0.025] p-7">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -683,8 +768,7 @@ export default function SummaryPage() {
               </h3>
 
               <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
-                Once submitted, this case will be marked as completed
-                for the ASHA visit and made available to the doctor.
+                Once submitted, this case will be marked as completed for the ASHA visit and made available to the doctor.
               </p>
             </div>
 
@@ -703,7 +787,6 @@ export default function SummaryPage() {
           </div>
         </div>
 
-        {/* Back */}
         <div className="mt-6">
           <button
             type="button"
@@ -719,7 +802,6 @@ export default function SummaryPage() {
           </button>
         </div>
 
-        {/* Progress */}
         <div className="mt-8 flex items-center justify-center gap-3 text-xs text-slate-500">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-white">
             <Check size={14} />
@@ -754,7 +836,21 @@ export default function SummaryPage() {
   );
 }
 
-
+export default function SummaryPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-[#061321] text-white">
+          <p className="text-slate-400">
+            Loading clinical summary...
+          </p>
+        </main>
+      }
+    >
+      <SummaryContent />
+    </Suspense>
+  );
+}
 
 function InfoCard({
   icon,

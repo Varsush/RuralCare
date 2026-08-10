@@ -1,7 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import {
+  Suspense,
+  useEffect,
+  useState,
+} from "react";
+import {
+  useSearchParams,
+  useRouter,
+} from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -25,18 +32,28 @@ type Question = {
   options: string[];
 };
 
-export default function FollowUpPage() {
+function FollowUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const householdId = searchParams.get("id");
 
-  const [visit, setVisit] = useState<VisitData | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [visit, setVisit] =
+    useState<VisitData | null>(null);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [questions, setQuestions] =
+    useState<Question[]>([]);
+
+  const [answers, setAnswers] =
+    useState<Record<number, string>>({});
+
+  const [currentQuestion, setCurrentQuestion] =
+    useState(0);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
 
   useEffect(() => {
     if (!householdId) return;
@@ -53,13 +70,17 @@ export default function FollowUpPage() {
     }
 
     try {
-      const parsedVisit: VisitData = JSON.parse(savedVisit);
+      const parsedVisit: VisitData =
+        JSON.parse(savedVisit);
 
       setVisit(parsedVisit);
 
       generateQuestions(parsedVisit);
     } catch (error) {
-      console.error("Could not read visit data:", error);
+      console.error(
+        "Could not read visit data:",
+        error
+      );
 
       router.replace(
         `/dashboard/household/complaint?id=${householdId}`
@@ -67,32 +88,40 @@ export default function FollowUpPage() {
     }
   }, [householdId, router]);
 
-  const generateQuestions = async (visitData: VisitData) => {
-  try {
-    setLoading(true);
-    setError("");
+  const generateQuestions = async (
+    visitData: VisitData
+  ) => {
+    try {
+      setLoading(true);
+      setError("");
 
-    const API_URL =
-     process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-      
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL ||
+        "http://127.0.0.1:8000";
 
-    const response = await fetch(
-      `${API_URL}/api/ai/follow-up`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          complaint: visitData.complaint,
-          relationship: visitData.relationship,
-          language: visitData.language || "English",
-        }),
-      }
-    );
+      const response = await fetch(
+        `${API_URL}/api/ai/follow-up`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            complaint: visitData.complaint,
+            relationship:
+              visitData.relationship,
+            language:
+              visitData.language ||
+              "English",
+          }),
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
+        const errorData =
+          await response
+            .json()
+            .catch(() => null);
 
         throw new Error(
           errorData?.detail ||
@@ -100,7 +129,8 @@ export default function FollowUpPage() {
         );
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (
         !data.questions ||
@@ -114,7 +144,10 @@ export default function FollowUpPage() {
 
       setQuestions(data.questions);
     } catch (error) {
-      console.error("Could not generate AI questions:", error);
+      console.error(
+        "Could not generate AI questions:",
+        error
+      );
 
       setError(
         error instanceof Error
@@ -126,13 +159,16 @@ export default function FollowUpPage() {
     }
   };
 
-  const question = questions[currentQuestion];
+  const question =
+    questions[currentQuestion];
 
   const selectedAnswer = question
     ? answers[question.id]
     : undefined;
 
-  const selectAnswer = (answer: string) => {
+  const selectAnswer = (
+    answer: string
+  ) => {
     if (!question) return;
 
     setAnswers((previous) => ({
@@ -149,17 +185,26 @@ export default function FollowUpPage() {
       return;
     }
 
-    setCurrentQuestion((previous) => previous - 1);
+    setCurrentQuestion(
+      (previous) => previous - 1
+    );
   };
 
   const goNext = () => {
     if (!selectedAnswer) {
-      alert("Please select an answer before continuing.");
+      alert(
+        "Please select an answer before continuing."
+      );
       return;
     }
 
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((previous) => previous + 1);
+    if (
+      currentQuestion <
+      questions.length - 1
+    ) {
+      setCurrentQuestion(
+        (previous) => previous + 1
+      );
       return;
     }
 
@@ -197,8 +242,7 @@ export default function FollowUpPage() {
           </h2>
 
           <p className="mt-2 text-sm text-slate-400">
-            Understanding the patient complaint and generating
-            relevant follow-up questions.
+            Understanding the patient complaint and generating relevant follow-up questions.
           </p>
         </div>
       </main>
@@ -244,18 +288,18 @@ export default function FollowUpPage() {
   }
 
   const progress =
-    ((currentQuestion + 1) / questions.length) * 100;
+    ((currentQuestion + 1) /
+      questions.length) *
+    100;
 
   return (
     <main className="min-h-screen bg-[#061321] text-white">
-      
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-40 top-0 h-[650px] w-[650px] rounded-full bg-emerald-500/[0.06] blur-[180px]" />
 
         <div className="absolute bottom-[-180px] right-[8%] h-[500px] w-[500px] rounded-full bg-cyan-500/[0.05] blur-[180px]" />
       </div>
 
-      
       <header className="relative z-10 border-b border-white/[0.07] bg-[#071827]/70 backdrop-blur-xl">
         <div className="mx-auto flex h-[88px] max-w-[1188px] items-center justify-between px-8">
           <div className="flex items-center gap-4">
@@ -289,9 +333,7 @@ export default function FollowUpPage() {
         </div>
       </header>
 
-      
       <section className="relative z-10 mx-auto w-full max-w-[900px] px-8 pb-16 pt-12">
-        
         <div className="mb-8">
           <p className="mb-3 flex items-center gap-2 text-sm font-semibold tracking-wide text-emerald-400">
             <Sparkles size={17} />
@@ -308,7 +350,6 @@ export default function FollowUpPage() {
           </p>
         </div>
 
-        
         <div className="mb-7 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Patient complaint
@@ -320,7 +361,8 @@ export default function FollowUpPage() {
 
           <div className="mt-4 flex flex-wrap gap-3">
             <span className="rounded-lg bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300">
-              Relationship: {visit.relationship}
+              Relationship:{" "}
+              {visit.relationship}
             </span>
 
             {visit.photo && (
@@ -331,11 +373,11 @@ export default function FollowUpPage() {
           </div>
         </div>
 
-        
         <div className="mb-7">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-medium text-slate-300">
-              Question {currentQuestion + 1} of{" "}
+              Question{" "}
+              {currentQuestion + 1} of{" "}
               {questions.length}
             </p>
 
@@ -347,12 +389,13 @@ export default function FollowUpPage() {
           <div className="h-2 overflow-hidden rounded-full bg-white/[0.07]">
             <div
               className="h-full rounded-full bg-emerald-500 transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              style={{
+                width: `${progress}%`,
+              }}
             />
           </div>
         </div>
 
-        
         <div className="rounded-3xl border border-white/[0.08] bg-white/[0.035] p-8 backdrop-blur-xl">
           <div className="flex items-start gap-4">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-sm font-bold text-emerald-400">
@@ -370,53 +413,56 @@ export default function FollowUpPage() {
             </div>
           </div>
 
-          
           <div className="mt-8 space-y-3">
-            {question.options.map((option) => {
-              const selected = selectedAnswer === option;
+            {question.options.map(
+              (option) => {
+                const selected =
+                  selectedAnswer === option;
 
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => selectAnswer(option)}
-                  className={`flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition ${
-                    selected
-                      ? "border-emerald-400/60 bg-emerald-500/10"
-                      : "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04]"
-                  }`}
-                >
-                  <span
-                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() =>
+                      selectAnswer(option)
+                    }
+                    className={`flex w-full items-center gap-4 rounded-2xl border p-5 text-left transition ${
                       selected
-                        ? "border-emerald-400 bg-emerald-500"
-                        : "border-white/[0.20]"
+                        ? "border-emerald-400/60 bg-emerald-500/10"
+                        : "border-white/[0.08] bg-white/[0.02] hover:border-white/[0.16] hover:bg-white/[0.04]"
                     }`}
                   >
-                    {selected && (
-                      <Check
-                        size={14}
-                        className="text-white"
-                      />
-                    )}
-                  </span>
+                    <span
+                      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                        selected
+                          ? "border-emerald-400 bg-emerald-500"
+                          : "border-white/[0.20]"
+                      }`}
+                    >
+                      {selected && (
+                        <Check
+                          size={14}
+                          className="text-white"
+                        />
+                      )}
+                    </span>
 
-                  <span
-                    className={`text-[15px] ${
-                      selected
-                        ? "font-semibold text-white"
-                        : "text-slate-300"
-                    }`}
-                  >
-                    {option}
-                  </span>
-                </button>
-              );
-            })}
+                    <span
+                      className={`text-[15px] ${
+                        selected
+                          ? "font-semibold text-white"
+                          : "text-slate-300"
+                      }`}
+                    >
+                      {option}
+                    </span>
+                  </button>
+                );
+              }
+            )}
           </div>
         </div>
 
-        
         <div className="mt-7 flex items-center justify-between gap-4">
           <button
             type="button"
@@ -432,7 +478,8 @@ export default function FollowUpPage() {
             onClick={goNext}
             className="flex h-12 items-center gap-3 rounded-xl bg-emerald-500 px-7 text-sm font-semibold transition hover:bg-emerald-400"
           >
-            {currentQuestion === questions.length - 1
+            {currentQuestion ===
+            questions.length - 1
               ? "Generate Summary"
               : "Next"}
 
@@ -469,5 +516,21 @@ export default function FollowUpPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function FollowUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-[#061321] text-white">
+          <p className="text-slate-400">
+            Loading follow-up...
+          </p>
+        </main>
+      }
+    >
+      <FollowUpContent />
+    </Suspense>
   );
 }

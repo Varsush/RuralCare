@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -35,7 +35,7 @@ type Household = {
   priority?: string;
 };
 
-export default function HouseholdPage() {
+function HouseholdContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -130,6 +130,7 @@ export default function HouseholdPage() {
         </p>
 
         <button
+          type="button"
           onClick={() => router.push("/dashboard")}
           className="mt-6 rounded-xl bg-emerald-500 px-5 py-3 font-semibold transition hover:bg-emerald-400"
         >
@@ -139,30 +140,43 @@ export default function HouseholdPage() {
     );
   }
 
-  const houseName = household.houseNumber || household.house || "House";
-  const headName = household.headName || household.head || "Not available";
-  const mobile = household.mobile || "Not available";
+  const houseName =
+    household.houseNumber || household.house || "House";
+
+  const headName =
+    household.headName || household.head || "Not available";
+
+  const mobile =
+    household.mobile || "Not available";
+
   const address =
-    household.address || household.location || "Not available";
+    household.address ||
+    household.location ||
+    "Not available";
 
   return (
     <main className="min-h-screen bg-[#061321] text-white">
-      {/* Background */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -left-40 top-0 h-[650px] w-[650px] rounded-full bg-emerald-500/[0.06] blur-[180px]" />
+
         <div className="absolute bottom-[-180px] right-[10%] h-[500px] w-[500px] rounded-full bg-cyan-500/[0.05] blur-[180px]" />
       </div>
 
-      {/* Top bar */}
       <header className="relative z-10 border-b border-white/[0.07] bg-[#071827]/70 backdrop-blur-xl">
         <div className="mx-auto flex h-[88px] max-w-[1188px] items-center justify-between px-8">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10">
-              <HeartPulse size={28} className="text-emerald-400" />
+              <HeartPulse
+                size={28}
+                className="text-emerald-400"
+              />
             </div>
 
             <div>
-              <h1 className="text-xl font-bold">SahayakAI</h1>
+              <h1 className="text-xl font-bold">
+                SahayakAI
+              </h1>
+
               <p className="text-xs text-slate-400">
                 Community Healthcare
               </p>
@@ -170,6 +184,7 @@ export default function HouseholdPage() {
           </div>
 
           <button
+            type="button"
             onClick={() => router.push("/dashboard")}
             className="flex items-center gap-2 text-sm font-medium text-slate-400 transition hover:text-white"
           >
@@ -179,9 +194,7 @@ export default function HouseholdPage() {
         </div>
       </header>
 
-      {/* Content */}
       <section className="relative z-10 mx-auto w-full max-w-[1000px] px-8 pb-16 pt-12">
-        {/* Heading */}
         <div className="mb-9">
           <p className="mb-3 text-sm font-semibold tracking-wide text-emerald-400">
             HOUSEHOLD DETAILS
@@ -206,11 +219,13 @@ export default function HouseholdPage() {
           </div>
         </div>
 
-        {/* Basic household information */}
         <div className="rounded-3xl border border-white/[0.08] bg-white/[0.035] p-8 backdrop-blur-xl">
           <div className="mb-7 flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10">
-              <Home size={23} className="text-emerald-400" />
+              <Home
+                size={23}
+                className="text-emerald-400"
+              />
             </div>
 
             <div>
@@ -271,15 +286,20 @@ export default function HouseholdPage() {
           </div>
         </div>
 
-        {/* Family information */}
         <div className="mt-7 rounded-3xl border border-white/[0.08] bg-white/[0.035] p-8 backdrop-blur-xl">
           <div className="mb-7 flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-500/10">
-              <Users size={23} className="text-cyan-400" />
+              <Users
+                size={23}
+                className="text-cyan-400"
+              />
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold">Family Information</h3>
+              <h3 className="text-xl font-semibold">
+                Family Information
+              </h3>
+
               <p className="text-sm text-slate-400">
                 Record important family health information
               </p>
@@ -300,7 +320,12 @@ export default function HouseholdPage() {
               value={vaccination}
               onChange={setVaccination}
               icon={<Syringe size={18} />}
-              options={["Yes", "No", "Partially", "Not applicable"]}
+              options={[
+                "Yes",
+                "No",
+                "Partially",
+                "Not applicable",
+              ]}
             />
 
             <SelectField
@@ -321,12 +346,14 @@ export default function HouseholdPage() {
           </div>
         </div>
 
-        {/* Start health visit */}
         <div className="mt-7 rounded-3xl border border-emerald-500/10 bg-emerald-500/[0.035] p-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10">
-                <Stethoscope size={25} className="text-emerald-400" />
+                <Stethoscope
+                  size={25}
+                  className="text-emerald-400"
+                />
               </div>
 
               <div>
@@ -342,6 +369,7 @@ export default function HouseholdPage() {
             </div>
 
             <button
+              type="button"
               onClick={() => {
                 localStorage.setItem(
                   `sahayak_family_${household.id}`,
@@ -360,12 +388,32 @@ export default function HouseholdPage() {
               className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 font-semibold transition hover:bg-emerald-400"
             >
               Start Health Visit
-              <ArrowLeft size={18} className="rotate-180" />
+
+              <ArrowLeft
+                size={18}
+                className="rotate-180"
+              />
             </button>
           </div>
         </div>
       </section>
     </main>
+  );
+}
+
+export default function HouseholdPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-[#061321] text-white">
+          <p className="text-slate-400">
+            Loading household...
+          </p>
+        </main>
+      }
+    >
+      <HouseholdContent />
+    </Suspense>
   );
 }
 
@@ -381,7 +429,10 @@ function InfoCard({
   return (
     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5">
       <div className="flex items-center gap-2 text-sm text-slate-400">
-        <span className="text-emerald-400">{icon}</span>
+        <span className="text-emerald-400">
+          {icon}
+        </span>
+
         {label}
       </div>
 
@@ -408,17 +459,25 @@ function SelectField({
   return (
     <label className="block">
       <span className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-300">
-        <span className="text-cyan-400">{icon}</span>
+        <span className="text-cyan-400">
+          {icon}
+        </span>
+
         {label}
       </span>
 
       <div className="relative">
         <select
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) =>
+            onChange(e.target.value)
+          }
           className="h-12 w-full appearance-none rounded-2xl border border-white/[0.10] bg-white/[0.035] px-4 pr-11 text-sm text-white outline-none transition focus:border-emerald-400/60"
         >
-          <option value="" className="bg-[#071827]">
+          <option
+            value=""
+            className="bg-[#071827]"
+          >
             Select an option
           </option>
 
