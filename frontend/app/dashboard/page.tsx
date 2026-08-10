@@ -90,7 +90,9 @@ export default function Dashboard() {
 
     if (deletedSaved) {
       try {
-        const parsedDeleted = JSON.parse(deletedSaved);
+        const parsedDeleted = JSON.parse(
+          deletedSaved
+        );
 
         if (Array.isArray(parsedDeleted)) {
           deletedIds = parsedDeleted.map(Number);
@@ -100,25 +102,70 @@ export default function Dashboard() {
       }
     }
 
-    const activeDefaultHouseholds =
-      defaultHouseholds.filter(
-        (household) =>
-          !deletedIds.includes(household.id)
+    const getVisitStatus = (
+      householdId: number
+    ): "Pending" | "Visited" => {
+      const savedVisit = localStorage.getItem(
+        `sahayak_visit_${householdId}`
       );
 
-    const saved =
-      localStorage.getItem("sahayak_households");
+      if (!savedVisit) {
+        return "Pending";
+      }
+
+      try {
+        const parsedVisit = JSON.parse(
+          savedVisit
+        );
+
+        if (
+          parsedVisit.status === "Completed" ||
+          parsedVisit.completedAt ||
+          parsedVisit.submittedAt
+        ) {
+          return "Visited";
+        }
+      } catch {
+        return "Pending";
+      }
+
+      return "Pending";
+    };
+
+    const activeDefaultHouseholds =
+      defaultHouseholds
+        .filter(
+          (household) =>
+            !deletedIds.includes(
+              household.id
+            )
+        )
+        .map((household) => ({
+          ...household,
+          status: getVisitStatus(
+            household.id
+          ),
+        }));
+
+    const saved = localStorage.getItem(
+      "sahayak_households"
+    );
 
     if (!saved) {
-      setHouseholds(activeDefaultHouseholds);
+      setHouseholds(
+        activeDefaultHouseholds
+      );
       return;
     }
 
     try {
-      const savedHouseholds = JSON.parse(saved);
+      const savedHouseholds =
+        JSON.parse(saved);
 
       if (!Array.isArray(savedHouseholds)) {
-        setHouseholds(activeDefaultHouseholds);
+        setHouseholds(
+          activeDefaultHouseholds
+        );
         return;
       }
 
@@ -131,29 +178,36 @@ export default function Dashboard() {
               )
           )
           .map(
-            (household: any): Household => ({
-              id: Number(household.id),
+            (household: any): Household => {
+              const householdId =
+                Number(household.id);
 
-              house:
-                household.houseNumber ||
-                household.house ||
-                "House",
+              const visitStatus =
+                getVisitStatus(
+                  householdId
+                );
 
-              head:
-                household.headName ||
-                household.head ||
-                "Unknown",
-
-              location:
-                household.address ||
-                household.location ||
-                "Address not available",
-
-              status:
-                household.status === "Visited"
-                  ? "Visited"
-                  : "Pending",
-            })
+              return {
+                id: householdId,
+                house:
+                  household.houseNumber ||
+                  household.house ||
+                  "House",
+                head:
+                  household.headName ||
+                  household.head ||
+                  "Unknown",
+                location:
+                  household.address ||
+                  household.location ||
+                  "Address not available",
+                status:
+                  visitStatus === "Visited" ||
+                  household.status === "Visited"
+                    ? "Visited"
+                    : "Pending",
+              };
+            }
           );
 
       const householdMap =
@@ -178,7 +232,9 @@ export default function Dashboard() {
       );
 
       setHouseholds(
-        Array.from(householdMap.values())
+        Array.from(
+          householdMap.values()
+        )
       );
     } catch (error) {
       console.error(
@@ -186,7 +242,9 @@ export default function Dashboard() {
         error
       );
 
-      setHouseholds(activeDefaultHouseholds);
+      setHouseholds(
+        activeDefaultHouseholds
+      );
     }
   };
 
@@ -301,7 +359,9 @@ export default function Dashboard() {
 
             localStorage.setItem(
               "sahayak_doctor_cases",
-              JSON.stringify(remainingCases)
+              JSON.stringify(
+                remainingCases
+              )
             );
           }
         } catch (error) {
@@ -631,7 +691,7 @@ export default function Dashboard() {
                             type="button"
                             onClick={() =>
                               router.push(
-                                `/dashboard/household?id=${household.id}`
+                                `/dashboard/household/complaint?id=${household.id}`
                               )
                             }
                             className="h-12 rounded-xl bg-emerald-500 px-5 text-sm font-semibold transition hover:bg-emerald-400"
@@ -643,8 +703,7 @@ export default function Dashboard() {
                             type="button"
                             onClick={() =>
                               router.push(
-                               `/dashboard/household/visit?id=${household.id}`
-                                
+                                `/dashboard/household/visit?id=${household.id}`
                               )
                             }
                             className="h-12 rounded-xl border border-white/[0.12] bg-white/[0.025] px-5 text-sm font-semibold transition hover:bg-white/[0.06]"
