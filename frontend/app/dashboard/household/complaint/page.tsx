@@ -18,8 +18,6 @@ import {
   ChevronDown,
   HeartPulse,
   ImagePlus,
-  Mic,
-  Square,
   UserRound,
   X,
 } from "lucide-react";
@@ -53,27 +51,18 @@ function ComplaintContent() {
 
   const [household, setHousehold] =
     useState<Household | null>(null);
+
   const [relationship, setRelationship] =
     useState("");
+
   const [complaint, setComplaint] =
     useState("");
+
   const [photo, setPhoto] =
     useState<string | null>(null);
-  const [isRecording, setIsRecording] =
-    useState(false);
-  const [recordingSeconds, setRecordingSeconds] =
-    useState(0);
 
   const fileInputRef =
     useRef<HTMLInputElement>(null);
-
-  const mediaRecorderRef =
-    useRef<MediaRecorder | null>(null);
-
-  const recordingTimerRef =
-    useRef<ReturnType<typeof setInterval> | null>(
-      null
-    );
 
   useEffect(() => {
     if (!householdId) return;
@@ -130,23 +119,6 @@ function ComplaintContent() {
     setHousehold(foundDefault || null);
   }, [householdId]);
 
-  useEffect(() => {
-    return () => {
-      if (recordingTimerRef.current) {
-        clearInterval(
-          recordingTimerRef.current
-        );
-      }
-
-      if (
-        mediaRecorderRef.current?.state ===
-        "recording"
-      ) {
-        mediaRecorderRef.current.stop();
-      }
-    };
-  }, []);
-
   const handlePhoto = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -163,84 +135,7 @@ function ComplaintContent() {
     reader.readAsDataURL(file);
   };
 
-  const startRecording = async () => {
-    try {
-      if (
-        !navigator.mediaDevices?.getUserMedia
-      ) {
-        alert(
-          "Microphone access is not supported in this browser."
-        );
-        return;
-      }
-
-      const stream =
-        await navigator.mediaDevices.getUserMedia(
-          {
-            audio: true,
-          }
-        );
-
-      const recorder =
-        new MediaRecorder(stream);
-
-      mediaRecorderRef.current = recorder;
-
-      setIsRecording(true);
-      setRecordingSeconds(0);
-
-      recorder.ondataavailable = () => {};
-
-      recorder.onstop = () => {
-        stream
-          .getTracks()
-          .forEach((track) =>
-            track.stop()
-          );
-      };
-
-      recorder.start();
-
-      recordingTimerRef.current =
-        setInterval(() => {
-          setRecordingSeconds(
-            (seconds) => seconds + 1
-          );
-        }, 1000);
-    } catch (error) {
-      console.error(
-        "Microphone error:",
-        error
-      );
-
-      alert(
-        "Microphone permission was not granted."
-      );
-    }
-  };
-
-  const stopRecording = () => {
-    if (recordingTimerRef.current) {
-      clearInterval(
-        recordingTimerRef.current
-      );
-
-      recordingTimerRef.current = null;
-    }
-
-    if (
-      mediaRecorderRef.current?.state ===
-      "recording"
-    ) {
-      mediaRecorderRef.current.stop();
-    }
-
-    setIsRecording(false);
-  };
-
-  const detectLanguage = (
-    text: string
-  ) => {
+  const detectLanguage = (text: string) => {
     const kannadaCharacters =
       text.match(/[\u0C80-\u0CFF]/g);
 
@@ -262,15 +157,9 @@ function ComplaintContent() {
       return;
     }
 
-    if (!complaint.trim()) {
-      alert(
-        "Please enter or speak the patient's health complaint."
-      );
-      return;
-    }
-
     const cleanedComplaint =
-      complaint.trim();
+      complaint.trim() ||
+      "No specific complaint reported";
 
     const language =
       detectLanguage(cleanedComplaint);
@@ -290,24 +179,14 @@ function ComplaintContent() {
       JSON.stringify(visitData)
     );
 
+    localStorage.setItem(
+      "sahayak_active_household",
+      String(householdId)
+    );
+
     router.push(
       `/dashboard/household/follow-up?id=${householdId}`
     );
-  };
-
-  const formatTime = (
-    seconds: number
-  ) => {
-    const minutes = Math.floor(
-      seconds / 60
-    );
-
-    const remainingSeconds =
-      seconds % 60;
-
-    return `${minutes}:${remainingSeconds
-      .toString()
-      .padStart(2, "0")}`;
   };
 
   if (!householdId) {
@@ -478,25 +357,14 @@ function ComplaintContent() {
         </div>
 
         <div className="mt-7 rounded-3xl border border-white/[0.08] bg-white/[0.035] p-8 backdrop-blur-xl">
-          <div className="mb-7 flex items-center justify-between gap-4">
-            <div>
-              <h3 className="text-xl font-semibold">
-                What is going on?
-              </h3>
+          <div className="mb-7">
+            <h3 className="text-xl font-semibold">
+              What is going on?
+            </h3>
 
-              <p className="mt-2 text-sm leading-6 text-slate-400">
-                The patient can explain the problem in their own language. Type it or use the microphone.
-              </p>
-            </div>
-
-            <Mic
-              size={25}
-              className={
-                isRecording
-                  ? "animate-pulse text-red-400"
-                  : "text-emerald-400"
-              }
-            />
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Enter the health issue reported by the patient.
+            </p>
           </div>
 
           <textarea
@@ -506,56 +374,10 @@ function ComplaintContent() {
                 event.target.value
               )
             }
-            placeholder="Type what the patient is experiencing in their own language..."
+            placeholder="Type what the patient is experiencing..."
             rows={7}
             className="w-full resize-none rounded-2xl border border-white/[0.10] bg-white/[0.025] px-5 py-4 text-[15px] leading-7 text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400/60 focus:bg-white/[0.04]"
           />
-
-          <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-slate-200">
-                Speak the complaint
-              </p>
-
-              <p className="mt-1 text-xs leading-5 text-slate-500">
-                Voice-to-text will be connected to the multilingual AI pipeline in the next stage.
-              </p>
-            </div>
-
-            {isRecording ? (
-              <button
-                type="button"
-                onClick={
-                  stopRecording
-                }
-                className="flex h-12 items-center justify-center gap-3 rounded-xl bg-red-500/15 px-5 text-sm font-semibold text-red-300 transition hover:bg-red-500/20"
-              >
-                <Square
-                  size={17}
-                  fill="currentColor"
-                />
-
-                Stop Recording
-
-                <span className="text-red-400">
-                  {formatTime(
-                    recordingSeconds
-                  )}
-                </span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={
-                  startRecording
-                }
-                className="flex h-12 items-center justify-center gap-3 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-5 text-sm font-semibold text-emerald-300 transition hover:bg-emerald-500/15"
-              >
-                <Mic size={18} />
-                Speak
-              </button>
-            )}
-          </div>
 
           <div className="mt-7 border-t border-white/[0.08] pt-7">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">

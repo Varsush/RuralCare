@@ -110,6 +110,27 @@ function HouseholdContent() {
     setLoading(false);
   }, [householdId]);
 
+  useEffect(() => {
+    if (!householdId) return;
+
+    const savedFamily = localStorage.getItem(
+      `sahayak_family_${householdId}`
+    );
+
+    if (!savedFamily) return;
+
+    try {
+      const familyData = JSON.parse(savedFamily);
+
+      setChildrenUnderFive(familyData.childrenUnderFive || "");
+      setVaccination(familyData.vaccination || "");
+      setPregnantWomen(familyData.pregnantWomen || "");
+      setPostpartumWomen(familyData.postpartumWomen || "");
+    } catch (error) {
+      console.error("Could not read family information:", error);
+    }
+  }, [householdId]);
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#061321] text-white">
@@ -123,7 +144,9 @@ function HouseholdContent() {
       <main className="flex min-h-screen flex-col items-center justify-center bg-[#061321] px-6 text-white">
         <Home size={42} className="mb-4 text-emerald-400" />
 
-        <h1 className="text-2xl font-bold">Household not found</h1>
+        <h1 className="text-2xl font-bold">
+          Household not found
+        </h1>
 
         <p className="mt-2 text-slate-400">
           The selected household could not be found.
@@ -153,6 +176,29 @@ function HouseholdContent() {
     household.address ||
     household.location ||
     "Not available";
+
+  const handleStartVisit = () => {
+    const familyData = {
+      childrenUnderFive,
+      vaccination,
+      pregnantWomen,
+      postpartumWomen,
+    };
+
+    localStorage.setItem(
+      `sahayak_family_${household.id}`,
+      JSON.stringify(familyData)
+    );
+
+    localStorage.setItem(
+      "sahayak_active_household",
+      String(household.id)
+    );
+
+    router.push(
+      `/dashboard/household/complaint?id=${household.id}`
+    );
+  };
 
   return (
     <main className="min-h-screen bg-[#061321] text-white">
@@ -370,21 +416,7 @@ function HouseholdContent() {
 
             <button
               type="button"
-              onClick={() => {
-                localStorage.setItem(
-                  `sahayak_family_${household.id}`,
-                  JSON.stringify({
-                    childrenUnderFive,
-                    vaccination,
-                    pregnantWomen,
-                    postpartumWomen,
-                  })
-                );
-
-                router.push(
-                  `/dashboard/household/complaint?id=${household.id}`
-                );
-              }}
+              onClick={handleStartVisit}
               className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 font-semibold transition hover:bg-emerald-400"
             >
               Start Health Visit
@@ -469,9 +501,7 @@ function SelectField({
       <div className="relative">
         <select
           value={value}
-          onChange={(e) =>
-            onChange(e.target.value)
-          }
+          onChange={(e) => onChange(e.target.value)}
           className="h-12 w-full appearance-none rounded-2xl border border-white/[0.10] bg-white/[0.035] px-4 pr-11 text-sm text-white outline-none transition focus:border-emerald-400/60"
         >
           <option

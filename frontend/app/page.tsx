@@ -30,37 +30,30 @@ export default function Home() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#07111D] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#061321] text-white">
 
       {/* Background */}
-
       <div className="absolute inset-0">
-
         <div className="absolute left-1/2 top-0 h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[180px]" />
 
         <div className="absolute -left-40 bottom-0 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[170px]" />
 
         <div className="absolute -right-32 top-40 h-[450px] w-[450px] rounded-full bg-teal-500/10 blur-[170px]" />
-
       </div>
 
       {/* Navbar */}
-
       <nav className="fixed left-1/2 top-6 z-50 flex w-[70%] max-w-7xl -translate-x-1/2 items-center justify-between rounded-3xl border border-white/10 bg-white/5 px-8 py-5 backdrop-blur-2xl">
 
         <div className="flex items-center gap-4">
 
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/20">
-
             <HeartPulse
               size={30}
               className="text-emerald-400"
             />
-
           </div>
 
           <div>
-
             <h1 className="text-2xl font-bold">
               SahayakAI
             </h1>
@@ -68,7 +61,6 @@ export default function Home() {
             <p className="text-sm text-slate-400">
               AI Powered Community Healthcare
             </p>
-
           </div>
 
         </div>
@@ -76,11 +68,9 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-
       <section className="relative z-20 mx-auto flex min-h-screen max-w-[1450px] items-center justify-between gap-24 px-10 pt-24">
 
         {/* LEFT */}
-
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -123,7 +113,6 @@ export default function Home() {
         </motion.div>
 
         {/* RIGHT GLASS CARD */}
-
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -149,8 +138,8 @@ export default function Home() {
               <div className="mt-14 flex flex-col gap-7">
 
                 {/* ASHA */}
-
                 <button
+                  type="button"
                   onClick={() => setRole("asha")}
                   className="group w-full rounded-3xl border border-emerald-500/20 bg-emerald-500/10 p-7 transition-all hover:scale-[1.02] hover:border-emerald-400 hover:bg-emerald-500/20"
                 >
@@ -183,8 +172,8 @@ export default function Home() {
                 </button>
 
                 {/* DOCTOR */}
-
                 <button
+                  type="button"
                   onClick={() => setRole("doctor")}
                   className="group w-full rounded-3xl border border-cyan-500/20 bg-cyan-500/10 p-7 transition-all hover:scale-[1.02] hover:border-cyan-400 hover:bg-cyan-500/20"
                 >
@@ -224,6 +213,7 @@ export default function Home() {
             <>
 
               <button
+                type="button"
                 onClick={() => setRole(null)}
                 className="mb-8 text-sm text-emerald-400 hover:underline"
               >
@@ -245,7 +235,6 @@ export default function Home() {
               <div className="mt-10 space-y-6">
 
                 {/* USERNAME */}
-
                 <div>
 
                   <label className="mb-2 block text-sm text-slate-400">
@@ -261,7 +250,6 @@ export default function Home() {
                 </div>
 
                 {/* PASSWORD */}
-
                 <div>
 
                   <label className="mb-2 block text-sm text-slate-400">
@@ -277,14 +265,12 @@ export default function Home() {
                 </div>
 
                 {/* LOGIN */}
-
                 <button
+                  type="button"
                   onClick={handleLogin}
                   className="w-full rounded-2xl bg-emerald-500 py-4 text-lg font-semibold transition hover:bg-emerald-400"
                 >
-
                   Login
-
                 </button>
 
               </div>
