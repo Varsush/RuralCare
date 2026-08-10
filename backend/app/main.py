@@ -13,14 +13,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-       
     "http://localhost:3000",
-    "http://127.0.0.1:3000",
-
-        # Add your Vercel frontend URL here after deployment.
-        # Example:
-        # "https://ruralcare.vercel.app",
+    "https://rural-care-hup9aowqu-varsha-hegdes-projects.vercel.app",
     ],
+
+        
+
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
