@@ -14,7 +14,6 @@ import {
   Clock3,
   Plus,
   MapPin,
-  ArrowRight,
   CircleUserRound,
   LayoutDashboard,
   Trash2,
@@ -78,21 +77,11 @@ export default function Dashboard() {
   const [households, setHouseholds] =
     useState<Household[]>(defaultHouseholds);
 
-  /* =====================================================
-     LOAD HOUSEHOLDS
-  ===================================================== */
-
   useEffect(() => {
     loadHouseholds();
   }, []);
 
   const loadHouseholds = () => {
-    /*
-     * Keep track of households deleted by the ASHA.
-     * This prevents default households from appearing
-     * again after a page refresh.
-     */
-
     const deletedSaved = localStorage.getItem(
       "sahayak_deleted_households"
     );
@@ -101,8 +90,7 @@ export default function Dashboard() {
 
     if (deletedSaved) {
       try {
-        const parsedDeleted =
-          JSON.parse(deletedSaved);
+        const parsedDeleted = JSON.parse(deletedSaved);
 
         if (Array.isArray(parsedDeleted)) {
           deletedIds = parsedDeleted.map(Number);
@@ -112,47 +100,27 @@ export default function Dashboard() {
       }
     }
 
-    /*
-     * Remove deleted default households.
-     */
-
     const activeDefaultHouseholds =
       defaultHouseholds.filter(
         (household) =>
           !deletedIds.includes(household.id)
       );
 
-    /*
-     * Load registered households.
-     */
-
     const saved =
-      localStorage.getItem(
-        "sahayak_households"
-      );
+      localStorage.getItem("sahayak_households");
 
     if (!saved) {
-      setHouseholds(
-        activeDefaultHouseholds
-      );
+      setHouseholds(activeDefaultHouseholds);
       return;
     }
 
     try {
-      const savedHouseholds =
-        JSON.parse(saved);
+      const savedHouseholds = JSON.parse(saved);
 
       if (!Array.isArray(savedHouseholds)) {
-        setHouseholds(
-          activeDefaultHouseholds
-        );
+        setHouseholds(activeDefaultHouseholds);
         return;
       }
-
-      /*
-       * Convert saved households into the
-       * dashboard Household structure.
-       */
 
       const formattedHouseholds: Household[] =
         savedHouseholds
@@ -188,13 +156,6 @@ export default function Dashboard() {
             })
           );
 
-      /*
-       * Merge default households and
-       * registered households by ID.
-       *
-       * Registered data overrides defaults.
-       */
-
       const householdMap =
         new Map<number, Household>();
 
@@ -217,9 +178,7 @@ export default function Dashboard() {
       );
 
       setHouseholds(
-        Array.from(
-          householdMap.values()
-        )
+        Array.from(householdMap.values())
       );
     } catch (error) {
       console.error(
@@ -227,15 +186,9 @@ export default function Dashboard() {
         error
       );
 
-      setHouseholds(
-        activeDefaultHouseholds
-      );
+      setHouseholds(activeDefaultHouseholds);
     }
   };
-
-  /* =====================================================
-     DELETE HOUSEHOLD
-  ===================================================== */
 
   const deleteHousehold = (
     householdId: number
@@ -259,10 +212,6 @@ export default function Dashboard() {
     }
 
     try {
-      /* -----------------------------------------------
-         1. SAVE DELETED HOUSEHOLD ID
-      ------------------------------------------------ */
-
       const deletedSaved =
         localStorage.getItem(
           "sahayak_deleted_households"
@@ -292,10 +241,6 @@ export default function Dashboard() {
         "sahayak_deleted_households",
         JSON.stringify(deletedIds)
       );
-
-      /* -----------------------------------------------
-         2. REMOVE FROM REGISTERED HOUSEHOLDS
-      ------------------------------------------------ */
 
       const savedHouseholds =
         localStorage.getItem(
@@ -328,25 +273,13 @@ export default function Dashboard() {
         }
       }
 
-      /* -----------------------------------------------
-         3. REMOVE FAMILY DATA
-      ------------------------------------------------ */
-
       localStorage.removeItem(
         `sahayak_family_${householdId}`
       );
 
-      /* -----------------------------------------------
-         4. REMOVE VISIT DATA
-      ------------------------------------------------ */
-
       localStorage.removeItem(
         `sahayak_visit_${householdId}`
       );
-
-      /* -----------------------------------------------
-         5. REMOVE DOCTOR CASE
-      ------------------------------------------------ */
 
       const savedDoctorCases =
         localStorage.getItem(
@@ -368,9 +301,7 @@ export default function Dashboard() {
 
             localStorage.setItem(
               "sahayak_doctor_cases",
-              JSON.stringify(
-                remainingCases
-              )
+              JSON.stringify(remainingCases)
             );
           }
         } catch (error) {
@@ -380,10 +311,6 @@ export default function Dashboard() {
           );
         }
       }
-
-      /* -----------------------------------------------
-         6. REMOVE FROM SCREEN IMMEDIATELY
-      ------------------------------------------------ */
 
       setHouseholds((current) =>
         current.filter(
@@ -403,10 +330,6 @@ export default function Dashboard() {
     }
   };
 
-  /* =====================================================
-     COUNTS
-  ===================================================== */
-
   const visitedCount =
     households.filter(
       (household) =>
@@ -418,10 +341,6 @@ export default function Dashboard() {
       (household) =>
         household.status === "Pending"
     ).length;
-
-  /* =====================================================
-     STATS
-  ===================================================== */
 
   const stats = [
     {
@@ -454,44 +373,24 @@ export default function Dashboard() {
     },
   ];
 
-  /* =====================================================
-     PAGE
-  ===================================================== */
-
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#061321] text-white">
-
-      {/* =================================================
-          BACKGROUND
-      ================================================= */}
-
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-
         <div className="absolute -left-40 top-0 h-[650px] w-[650px] rounded-full bg-emerald-500/[0.06] blur-[180px]" />
 
         <div className="absolute bottom-[-180px] left-[35%] h-[500px] w-[500px] rounded-full bg-cyan-500/[0.05] blur-[180px]" />
-
       </div>
 
-      {/* =================================================
-          SIDEBAR
-      ================================================= */}
-
       <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[248px] border-r border-white/[0.08] bg-[#071827]/95 px-4 py-7 backdrop-blur-2xl lg:flex lg:flex-col">
-
         <div className="flex items-center gap-4 px-3">
-
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10">
-
             <HeartPulse
               size={30}
               className="text-emerald-400"
             />
-
           </div>
 
           <div>
-
             <h1 className="text-xl font-bold tracking-tight">
               SahayakAI
             </h1>
@@ -499,28 +398,31 @@ export default function Dashboard() {
             <p className="mt-1 text-xs text-slate-400">
               Community Healthcare
             </p>
-
           </div>
-
         </div>
 
         <nav className="mt-12 space-y-2">
-
           {menu.map((item) => {
-
             const Icon = item.icon;
 
             return (
               <motion.button
                 key={item.name}
+                type="button"
                 whileHover={{ x: 3 }}
+                onClick={() => {
+                  if (item.name === "Reports") {
+                    router.push(
+                      "/dashboard/reports"
+                    );
+                  }
+                }}
                 className={`flex h-12 w-full items-center gap-4 rounded-xl px-4 text-left transition ${
                   item.active
                     ? "bg-emerald-500/15 text-white"
                     : "text-slate-400 hover:bg-white/[0.04] hover:text-white"
                 }`}
               >
-
                 <Icon
                   size={22}
                   className={
@@ -533,29 +435,21 @@ export default function Dashboard() {
                 <span className="text-[16px] font-medium">
                   {item.name}
                 </span>
-
               </motion.button>
             );
-
           })}
-
         </nav>
 
         <div className="mt-auto rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4">
-
           <div className="flex items-center gap-3">
-
             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10">
-
               <CircleUserRound
                 size={25}
                 className="text-emerald-400"
               />
-
             </div>
 
             <div className="min-w-0">
-
               <p className="truncate text-sm font-semibold">
                 ASHA Worker
               </p>
@@ -563,31 +457,15 @@ export default function Dashboard() {
               <p className="mt-1 text-xs text-slate-400">
                 Mangalore PHC
               </p>
-
             </div>
-
           </div>
-
         </div>
-
       </aside>
 
-      {/* =================================================
-          MAIN AREA
-      ================================================= */}
-
       <div className="relative z-10 min-h-screen lg:ml-[248px]">
-
         <section className="mx-auto w-full max-w-[1240px] px-8 pb-12 pt-12">
-
-          {/* =================================================
-              WELCOME
-          ================================================= */}
-
           <div className="flex flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
-
             <div>
-
               <p className="mb-4 text-sm font-semibold tracking-wide text-emerald-400">
                 ASHA WORKER DASHBOARD
               </p>
@@ -599,30 +477,19 @@ export default function Dashboard() {
               <p className="mt-3 text-[17px] text-slate-400">
                 Manage households and record community visits.
               </p>
-
             </div>
 
             <Link
               href="/dashboard/add-household"
               className="flex h-12 w-fit items-center gap-2 rounded-xl bg-emerald-500 px-5 font-semibold transition hover:bg-emerald-400"
             >
-
               <Plus size={21} />
-
               Add Household
-
             </Link>
-
           </div>
 
-          {/* =================================================
-              STATS
-          ================================================= */}
-
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
-
             {stats.map((stat) => {
-
               const Icon = stat.icon;
 
               return (
@@ -631,11 +498,8 @@ export default function Dashboard() {
                   whileHover={{ y: -3 }}
                   className="min-h-[148px] rounded-2xl border border-white/[0.08] bg-white/[0.035] p-6 backdrop-blur-xl"
                 >
-
                   <div className="flex h-full items-start justify-between gap-4">
-
                     <div>
-
                       <p className="text-[16px] font-medium text-slate-200">
                         {stat.title}
                       </p>
@@ -649,37 +513,24 @@ export default function Dashboard() {
                       <p className="mt-4 text-sm text-slate-400">
                         {stat.description}
                       </p>
-
                     </div>
 
                     <div
                       className={`flex h-[58px] w-[58px] shrink-0 items-center justify-center rounded-2xl ${stat.boxClass}`}
                     >
-
                       <Icon
                         size={30}
                         className={stat.iconClass}
                       />
-
                     </div>
-
                   </div>
-
                 </motion.div>
               );
-
             })}
-
           </div>
 
-          {/* =================================================
-              REGISTERED HOUSEHOLDS
-          ================================================= */}
-
           <div className="mt-12 flex items-end justify-between">
-
             <div>
-
               <h3 className="text-[20px] font-bold">
                 Registered Households
               </h3>
@@ -687,33 +538,20 @@ export default function Dashboard() {
               <p className="mt-2 text-[15px] text-slate-400">
                 Select a household to view information and record a visit.
               </p>
-
             </div>
-
-            
-
           </div>
-
-          {/* =================================================
-              HOUSEHOLD LIST
-          ================================================= */}
 
           <div
             id="household-list"
             className="mt-5 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.025]"
           >
-
             {households.length === 0 ? (
-
               <div className="px-6 py-16 text-center">
-
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04]">
-
                   <Home
                     size={26}
                     className="text-slate-500"
                   />
-
                 </div>
 
                 <h4 className="mt-5 text-lg font-semibold">
@@ -728,20 +566,13 @@ export default function Dashboard() {
                   href="/dashboard/add-household"
                   className="mt-6 inline-flex h-11 items-center gap-2 rounded-xl bg-emerald-500 px-5 text-sm font-semibold transition hover:bg-emerald-400"
                 >
-
                   <Plus size={18} />
-
                   Add Household
-
                 </Link>
-
               </div>
-
             ) : (
-
               households.map(
                 (household, index) => (
-
                   <motion.div
                     key={household.id}
                     whileHover={{
@@ -755,26 +586,17 @@ export default function Dashboard() {
                         : ""
                     }`}
                   >
-
                     <div className="flex h-full flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-
-                      {/* HOUSEHOLD INFORMATION */}
-
                       <div className="flex items-center gap-5">
-
                         <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10">
-
                           <Home
                             size={30}
                             className="text-emerald-400"
                           />
-
                         </div>
 
                         <div>
-
                           <div className="flex flex-wrap items-center gap-3">
-
                             <h4 className="text-[21px] font-semibold">
                               {household.house}
                             </h4>
@@ -789,7 +611,6 @@ export default function Dashboard() {
                             >
                               {household.status}
                             </span>
-
                           </div>
 
                           <p className="mt-2 text-[15px] text-slate-200">
@@ -797,26 +618,15 @@ export default function Dashboard() {
                           </p>
 
                           <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-400">
-
                             <MapPin size={15} />
-
                             {household.location}
-
                           </p>
-
                         </div>
-
                       </div>
 
-                      {/* ACTIONS */}
-
                       <div className="flex flex-wrap items-center gap-3 lg:pr-1">
-
-                        {/* START VISIT / VIEW VISIT */}
-
                         {household.status ===
                         "Pending" ? (
-
                           <button
                             type="button"
                             onClick={() =>
@@ -828,38 +638,20 @@ export default function Dashboard() {
                           >
                             Start Visit
                           </button>
-
                         ) : (
-
                           <button
                             type="button"
                             onClick={() =>
                               router.push(
-                                `/dashboard/household?id=${household.id}`
+                               `/dashboard/household/visit?id=${household.id}`
+                                
                               )
                             }
                             className="h-12 rounded-xl border border-white/[0.12] bg-white/[0.025] px-5 text-sm font-semibold transition hover:bg-white/[0.06]"
                           >
                             View Visit
                           </button>
-
                         )}
-
-                        {/* VIEW HOUSEHOLD */}
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            router.push(
-                              `/dashboard/household?id=${household.id}`
-                            )
-                          }
-                          className="flex h-12 items-center rounded-xl border border-white/[0.12] bg-transparent px-6 text-sm font-semibold transition hover:bg-white/[0.05]"
-                        >
-                          View
-                        </button>
-
-                        {/* DELETE HOUSEHOLD */}
 
                         <button
                           type="button"
@@ -872,56 +664,32 @@ export default function Dashboard() {
                           aria-label={`Delete ${household.house}`}
                           className="flex h-12 w-12 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/5 text-red-400 transition hover:border-red-500/40 hover:bg-red-500/10"
                         >
-
                           <Trash2 size={18} />
-
                         </button>
-
                       </div>
-
                     </div>
-
                   </motion.div>
-
                 )
               )
-
             )}
-
           </div>
 
-          {/* =================================================
-              WORKFLOW
-          ================================================= */}
-
           <div className="mt-7 flex items-center gap-4 rounded-2xl border border-cyan-400/[0.08] bg-cyan-400/[0.025] px-5 py-5 sm:px-6">
-
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-400/30 text-cyan-400">
-
               <span className="text-sm font-bold">
                 i
               </span>
-
             </div>
 
             <p className="text-sm leading-6 text-slate-400">
-
               <span className="font-semibold text-cyan-400">
                 Workflow:
               </span>{" "}
-
-              Open a household → review family information → record a
-              health complaint → generate and verify the clinical summary
-              → submit the visit for doctor review.
-
+              Open a household → review family information → record a health complaint → generate and verify the clinical summary → submit the visit for doctor review.
             </p>
-
           </div>
-
         </section>
-
       </div>
-
     </main>
   );
 }
