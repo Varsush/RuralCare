@@ -68,24 +68,27 @@ export default function FollowUpPage() {
   }, [householdId, router]);
 
   const generateQuestions = async (visitData: VisitData) => {
-    try {
-      setLoading(true);
-      setError("");
+  try {
+    setLoading(true);
+    setError("");
 
-      const response = await fetch(
-        "`${process.env.NEXT_PUBLIC_API_URL}/api/ai/follow-up",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            complaint: visitData.complaint,
-            relationship: visitData.relationship,
-            language: visitData.language || "English",
-          }),
-        }
-      );
+    const API_URL =
+      "https://ruralcare-sn5k.onrender.com";
+
+    const response = await fetch(
+      `${API_URL}/api/ai/follow-up`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          complaint: visitData.complaint,
+          relationship: visitData.relationship,
+          language: visitData.language || "English",
+        }),
+      }
+    );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
